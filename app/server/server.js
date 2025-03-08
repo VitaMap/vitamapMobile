@@ -33,6 +33,8 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
+const bcrypt = require('bcrypt');
+
 // Route de login
 app.post('/api/login', (req, res) => {
   const { email, password } = req.body;
@@ -54,11 +56,16 @@ app.post('/api/login', (req, res) => {
     const user = results[0];
     console.log('Utilisateur trouvé:', user);
 
-    // Vérifier le mot de passe en clair
-    if (password !== user.mot_de_passe) {
-      console.log('Mot de passe incorrect');
-      return res.status(401).json({ message: 'Identifiants invalides' });
-    }
+    // Vérifier le mot de passe haché
+    bcrypt.compare(password, user.mot_de_passe, (err, isMatch) => {
+      if (err) {
+        console.error('Erreur de comparaison de mot de passe:', err);
+        return res.status(500).json({ message: 'Erreur du serveur', error: err });
+      }
+      if (!isMatch) {
+        console.log('Mot de passe incorrect');
+        return res.status(401).json({ message: 'Identifiants invalides' });
+      }
 
     // Générer un token JWT
     const token = jwt.sign({ id: user.utilisateur_id, email: user.email }, SECRET_KEY, {
@@ -67,7 +74,9 @@ app.post('/api/login', (req, res) => {
 
     res.json({ message: 'Connexion réussie', token });
   });
+ });
 });
+
 // Démarrer le serveur
 app.listen(PORT, () => {
   console.log(`Serveur en cours d'exécution sur http://localhost:${PORT}`);

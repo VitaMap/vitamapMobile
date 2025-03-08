@@ -1,13 +1,26 @@
-import React from 'react';
+import React,{useEffect} from 'react';
 import { Platform, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import Ionicons from 'react-native-vector-icons/Ionicons'; // Import des icônes
+import* as Location from 'expo-location'; // Import de la librairie de géolocalisation
 
 export default function Home() {
+  useEffect(() => {
+    (async () => {
+      if (Platform.OS !== 'web') {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          alert('Permission to access location was denied');
+          return;
+        }
+      }
+    })();
+  }, []);
+
   if (Platform.OS === 'web') {
     return (
       <View style={styles.container}>
-        <Text style={styles.title}>Welcome to VitaMap</Text>
+        <Text style={styles.title}>Bien venue sur  VitaMap</Text>
         <Text>Map is not available on web platform.</Text>
       </View>
     );
@@ -15,20 +28,23 @@ export default function Home() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Welcome to VitaMap</Text>
+      <Text style={styles.title}>Bien venu sur Vimap</Text>
+      {/* Coordonnées de la map */}
       <MapView
         style={styles.map}
         initialRegion={{
-          latitude: 37.78825,
-          longitude: -122.4324,
-          latitudeDelta: 0.0922,
-          longitudeDelta: 0.0421,
+          latitude: 0, // Latitude centrale de la carte du monde
+          longitude: 0, // Longitude centrale de la carte du monde
+          latitudeDelta: 180, // Zoom pour afficher toute la carte du monde
+          longitudeDelta: 360, // Zoom pour afficher toute la carte du monde
         }}
+        showsUserLocation={true}
+        showsMyLocationButton={true}
       >
         <Marker
-          coordinate={{ latitude: 37.78825, longitude: -122.4324 }}
-          title="Disease Location"
-          description="Description of the disease"
+            coordinate={{ latitude: 48.8566, longitude: 2.3522 }} // Exemple de marqueur à Paris
+            title="Paris"
+            description="Capitale de la France"
         />
       </MapView>
 
