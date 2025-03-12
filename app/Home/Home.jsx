@@ -20,7 +20,7 @@ export default function Home() {
   if (Platform.OS === 'web') {
     return (
       <View style={styles.container}>
-        <Text style={styles.title}>Bien venue sur  VitaMap</Text>
+        <Text style={styles.title}>Bienvenu sur  VitaMap</Text>
         <Text>Map is not available on web platform.</Text>
       </View>
     );
@@ -28,7 +28,7 @@ export default function Home() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Bien venu sur Vimap</Text>
+      <Text style={styles.title}>Bienvenue sur Vitamap</Text>
       {/* Coordonnées de la map */}
       <MapView
         style={styles.map}
