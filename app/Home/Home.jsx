@@ -1,10 +1,13 @@
-import React,{useEffect} from 'react';
+import React, { useEffect, useState } from 'react';
 import { Platform, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
-import Ionicons from 'react-native-vector-icons/Ionicons'; // Import des icônes
-import* as Location from 'expo-location'; // Import de la librairie de géolocalisation
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import * as Location from 'expo-location';
+import axios from 'axios';
 
 export default function Home() {
+  const [data, setData] = useState(null);
+
   useEffect(() => {
     (async () => {
       if (Platform.OS !== 'web') {
@@ -14,60 +17,65 @@ export default function Home() {
           return;
         }
       }
+
+      try {
+        const response = await axios.get('http://10.0.2.2:3000/api/data');
+        setData(response.data);
+      } catch (error) {
+        console.error('Erreur lors de la récupération des données :', error);
+      }
     })();
   }, []);
 
   if (Platform.OS === 'web') {
     return (
-      <View style={styles.container}>
-        <Text style={styles.title}>Bienvenu sur  VitaMap</Text>
-        <Text>Map is not available on web platform.</Text>
-      </View>
+        <View style={styles.container}>
+          <Text style={styles.title}>Bienvenu sur VitaMap</Text>
+          <Text>Map is not available on web platform.</Text>
+        </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Bienvenue sur Vitamap</Text>
-      {/* Coordonnées de la map */}
-      <MapView
-        style={styles.map}
-        initialRegion={{
-          latitude: 0, // Latitude centrale de la carte du monde
-          longitude: 0, // Longitude centrale de la carte du monde
-          latitudeDelta: 180, // Zoom pour afficher toute la carte du monde
-          longitudeDelta: 360, // Zoom pour afficher toute la carte du monde
-        }}
-        showsUserLocation={true}
-        showsMyLocationButton={true}
-      >
-        <Marker
-            coordinate={{ latitude: 48.8566, longitude: 2.3522 }} // Exemple de marqueur à Paris
-            title="Paris"
-            description="Capitale de la France"
-        />
-      </MapView>
+      <View style={styles.container}>
+        <Text style={styles.title}>Bienvenue sur Vitamap</Text>
+        <MapView
+            style={styles.map}
+            initialRegion={{
+              latitude: 46.603354,
+              longitude: 1.888334,
+              latitudeDelta: 10,
+              longitudeDelta: 10,
+            }}
+            showsUserLocation={true}
+            showsMyLocationButton={true}
+        >
+          <Marker
+              coordinate={{ latitude: 48.8566, longitude: 2.3522 }}
+              title="Paris"
+              description="Capitale de la France"
+          />
+        </MapView>
 
-      {/* Menu en bas avec icônes */}
-      <View style={styles.bottomMenu}>
-        <TouchableOpacity style={styles.menuButton}>
-          <Ionicons name="home-outline" size={20} color="#007bff" />
-          <Text style={styles.menuText}>Accueil</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.menuButton}>
-          <Ionicons name="search-outline" size={20} color="#007bff" />
-          <Text style={styles.menuText}>Recherche</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.menuButton}>
-          <Ionicons name="notifications-outline" size={20} color="#007bff" />
-          <Text style={styles.menuText}>Notifications</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.menuButton}>
-          <Ionicons name="person-outline" size={20} color="#007bff" />
-          <Text style={styles.menuText}>Profil</Text>
-        </TouchableOpacity>
+        <View style={styles.bottomMenu}>
+          <TouchableOpacity style={styles.menuButton}>
+            <Ionicons name="home-outline" size={20} color="#007bff" />
+            <Text style={styles.menuText}>Accueil</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.menuButton}>
+            <Ionicons name="search-outline" size={20} color="#007bff" />
+            <Text style={styles.menuText}>Recherche</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.menuButton}>
+            <Ionicons name="notifications-outline" size={20} color="#007bff" />
+            <Text style={styles.menuText}>Notifications</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.menuButton}>
+            <Ionicons name="person-outline" size={20} color="#007bff" />
+            <Text style={styles.menuText}>Profil</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
   );
 }
 

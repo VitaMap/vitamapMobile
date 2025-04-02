@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, ImageBackground, Image } from 'react-native';
 
-export default function Login({ navigation }) { // Ajouter navigation ici
+export default function Login({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -20,7 +20,6 @@ export default function Login({ navigation }) { // Ajouter navigation ici
 
       if (response.ok) {
         console.log('Connexion réussie :', data.token);
-        // Rediriger vers Home après une connexion réussie
         navigation.navigate('Home');
       } else {
         console.log('Erreur :', data.message);
@@ -33,42 +32,42 @@ export default function Login({ navigation }) { // Ajouter navigation ici
   };
 
   return (
-    <ImageBackground
-      source={require('../../assets/3262023.jpg')}
-      style={styles.backgroundImage}
-    >
-      <View style={styles.container}>
-        <Image
-          source={require('../../assets/realvitalogo.png')}
-          style={styles.logo}
-        />
-        <Text style={styles.title}>VitaMap</Text>
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          value={email}
-          onChangeText={setEmail}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Mot de passe"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
+      <ImageBackground
+          source={require('../../assets/3262023.jpg')}
+          style={styles.backgroundImage}
+      >
+        <View style={styles.container}>
+          <Image
+              source={require('../../assets/realvitalogo.png')}
+              style={styles.logo}
+          />
+          <Text style={styles.title}>VitaMap</Text>
+          <TextInput
+              style={styles.input}
+              placeholder="Email"
+              value={email}
+              onChangeText={setEmail}
+          />
+          <TextInput
+              style={styles.input}
+              placeholder="Mot de passe"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+          />
 
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={[styles.customButton, { backgroundColor: '#151516' }]}
-            onPress={handleLogin}
-          >
-            <Text style={styles.buttonText}>Se Connecter</Text>
-          </TouchableOpacity>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+                style={[styles.customButton, { backgroundColor: '#151516' }]}
+                onPress={handleLogin}
+            >
+              <Text style={styles.buttonText}>Se Connecter</Text>
+            </TouchableOpacity>
+          </View>
+
+          <StatusBar style="auto" />
         </View>
-
-        <StatusBar style="auto" />
-      </View>
-    </ImageBackground>
+      </ImageBackground>
   );
 }
 
