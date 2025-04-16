@@ -1,95 +1,150 @@
-import React, { useEffect, useState } from 'react';
-import { Platform, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, Animated, Image, ImageBackground } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import * as Location from 'expo-location';
-import axios from 'axios';
 
-export default function Home() {
-  const [data, setData] = useState(null);
+export default function Home({ navigation }) {
+  const [activeTab, setActiveTab] = useState('home'); // État pour suivre l'onglet actif
+  const [animation] = useState({
+    home: new Animated.Value(0),
+    notifications: new Animated.Value(0),
+    profil: new Animated.Value(0),
+  });
 
-  useEffect(() => {
-    (async () => {
-      if (Platform.OS !== 'web') {
-        let { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== 'granted') {
-          alert('Permission to access location was denied');
-          return;
-        }
+  const handleTabPress = (tab) => {
+    setActiveTab(tab);
+
+    // Lancer l'animation pour le tab actif
+    Animated.timing(animation[tab], {
+      toValue: 1,
+      duration: 300,
+      useNativeDriver: false,
+    }).start();
+
+    // Réinitialiser les autres animations
+    Object.keys(animation).forEach((key) => {
+      if (key !== tab) {
+        Animated.timing(animation[key], {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: false,
+        }).start();
       }
+    });
 
-      try {
-        const response = await axios.get('http://10.0.2.2:3000/api/data');
-        setData(response.data);
-      } catch (error) {
-        console.error('Erreur lors de la récupération des données :', error);
-      }
-    })();
-  }, []);
+    if (tab === 'profil') {
+      navigation.navigate('Profil');
+    }
+  };
 
-  if (Platform.OS === 'web') {
-    return (
-        <View style={styles.container}>
-          <Text style={styles.title}>Bienvenu sur VitaMap</Text>
-          <Text>Map is not available on web platform.</Text>
-        </View>
-    );
-  }
+  const getBarColor = (tab) => {
+    return animation[tab].interpolate({
+      inputRange: [0, 1],
+      outputRange: ['#fff', '#000'], // Blanc au repos, bleu actif
+    });
+  };
 
   return (
-      <View style={styles.container}>
-        <Text style={styles.title}>Bienvenue sur Vitamap</Text>
-        <MapView
-            style={styles.map}
-            initialRegion={{
-              latitude: 46.603354,
-              longitude: 1.888334,
-              latitudeDelta: 10,
-              longitudeDelta: 10,
-            }}
-            showsUserLocation={true}
-            showsMyLocationButton={true}
-        >
-          <Marker
-              coordinate={{ latitude: 48.8566, longitude: 2.3522 }}
-              title="Paris"
-              description="Capitale de la France"
-          />
-        </MapView>
 
-        <View style={styles.bottomMenu}>
-          <TouchableOpacity style={styles.menuButton}>
-            <Ionicons name="home-outline" size={20} color="#007bff" />
-            <Text style={styles.menuText}>Accueil</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.menuButton}>
-            <Ionicons name="search-outline" size={20} color="#007bff" />
-            <Text style={styles.menuText}>Recherche</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.menuButton}>
-            <Ionicons name="notifications-outline" size={20} color="#007bff" />
-            <Text style={styles.menuText}>Notifications</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.menuButton}>
-            <Ionicons name="person-outline" size={20} color="#007bff" />
-            <Text style={styles.menuText}>Profil</Text>
-          </TouchableOpacity>
-        </View>
+    <ImageBackground
+    source={require('../../assets/3262023.jpg')}
+    style={styles.backgroundImage}>
+    
+    <View style={styles.container}>
+    
+      <Image source={require('../../assets/realvitalogo.png')} 
+                          style={styles.logo}
+                      />
+   
+      <Ionicons name="menu-outline" size={25} color="#fff" style={{ position: 'absolute', top: 52, right: 20 }} />
+      <Ionicons name="arrow-back-outline" size={25} color="#fff" style={{ position: 'absolute', top: 52, left: 20 }} />
+
+      <MapView
+        style={styles.map}
+        initialRegion={{
+          latitude: 46.603354,
+          longitude: 1.888334,
+          latitudeDelta: 10,
+          longitudeDelta: 10,
+        }}
+        showsUserLocation={true}
+        showsMyLocationButton={true}
+      >
+        <Marker
+          coordinate={{ latitude: 48.8566, longitude: 2.3522 }}
+          title="Paris"
+          description="Capitale de la France"
+        />
+      </MapView>
+
+
+      <View style={styles.bottomMenu}>
+        <TouchableOpacity
+          style={styles.menuButton}
+          onPress={() => handleTabPress('home')}
+        >
+          <Ionicons name="home-outline" size={20} color={activeTab === 'home' ? 'rgba(12, 235, 123, 0.6)' : '#fff'} />
+        {/*  <Animated.View
+            style={[
+              styles.whiteBar,
+              { backgroundColor: getBarColor('home') },
+            ]}
+          />*/} 
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.menuButton}
+          onPress={() => handleTabPress('notifications')}
+        >
+          <Ionicons name="notifications-outline" size={20} color={activeTab === 'notifications' ? 'rgba(12, 235, 123, 0.6)' : '#fff'} />
+         {/* <Animated.View
+            style={[
+              styles.whiteBar,
+              { backgroundColor: getBarColor('notifications') },
+            ]}
+          />*/} 
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.menuButton}
+          onPress={() => handleTabPress('profil')}
+        >
+          <Ionicons name="person-outline" size={20} color={activeTab === 'profil' ? 'rgba(12, 235, 123, 0.6)' : '#fff'} />
+          {/* <Animated.View
+            style={[
+              styles.whiteBar,
+              { backgroundColor: getBarColor('profil') },
+            ]}
+          />*/} 
+        </TouchableOpacity>
       </View>
+    </View>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
+
+  backgroundImage: {
+    flex:1,
+    resizeMode: 'cover',
+  },
+
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+  
     alignItems: 'center',
     justifyContent: 'flex-start',
-    marginTop: 75,
+    marginTop: 0,
+    padding: 10,
+    paddingTop: 30,
+   
   },
   title: {
     fontSize: 24,
     marginBottom: 8,
+    color: '#fff',
+    fontWeight: 'bold',
   },
   map: {
     width: '100%',
@@ -99,7 +154,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    backgroundColor: '#f8f9fa',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+  
     width: '100%',
     height: 60,
     borderTopWidth: 1,
@@ -110,9 +166,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  menuText: {
-    fontSize: 12,
-    color: '#007bff',
-    marginTop: 4,
+  whiteBar: {
+    marginTop: 5,
+    width: '100%',
+    height: 3,
+    borderRadius: 2,
+  },
+
+  logo: {
+    width: 50,
+    height: 70,
+    
   },
 });

@@ -41,7 +41,7 @@ export default function Login({ navigation }) {
               source={require('../../assets/realvitalogo.png')}
               style={styles.logo}
           />
-          <Text style={styles.title}>VitaMap</Text>
+          <Text style={styles.title}></Text>
           <TextInput
               style={styles.input}
               placeholder="Email"

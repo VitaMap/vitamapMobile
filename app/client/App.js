@@ -4,7 +4,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import Login from '../Login/Login';
 import Register from '../Register/Register';
 import Home from '../Home/Home';
-
+import Profil from '../Profil/Profil';
 const Stack = createStackNavigator();
 
 export default function App() {
@@ -24,6 +24,11 @@ export default function App() {
                 <Stack.Screen
                     name="Home"
                     component={Home}
+                    options={{ headerShown: false }} // Cacher le header
+                />
+                <Stack.Screen
+                    name="Profil"
+                    component={Profil}
                     options={{ headerShown: false }} // Cacher le header
                 />
             </Stack.Navigator>

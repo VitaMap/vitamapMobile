@@ -113,6 +113,24 @@ app.get('/api/data', (req, res) => {
   res.json({ message: 'Données récupérées avec succès' });
 });
 
+// Endpoint pour récupérer les informations d'un utilisateur
+app.get('/api/user/:id', (req, res) => {
+  const userId = req.params.id;
+
+  db.query('SELECT id, nom, prenom, email, date_inscription FROM utilisateurs WHERE id = ?', [userId], (err, results) => {
+    if (err) {
+      console.error('Erreur lors de la récupération des données utilisateur :', err);
+      return res.status(500).json({ message: 'Erreur du serveur', error: err });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ message: 'Utilisateur non trouvé' });
+    }
+
+    res.json(results[0]);
+  });
+});
+
 app.listen(PORT, () => {
   console.log(`Serveur Express sur http://localhost:${PORT}`);
   console.log(`MySQL sur 3306 (separé)`);

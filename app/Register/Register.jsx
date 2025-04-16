@@ -8,6 +8,10 @@ export default function Register({ navigation }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
+    const handleLogin = () => {
+        navigation.navigate('Login');
+    };
+
     const handleRegister = async () => {
         try {
             const response = await fetch('http://10.0.2.2:3000/api/register', {
@@ -77,6 +81,8 @@ export default function Register({ navigation }) {
                     >
                         <Text style={styles.buttonText}>S'inscrire</Text>
                     </TouchableOpacity>
+                    <Text style= {styles.dcompte}
+                    onPress={handleLogin}>Déjà un compte ?</Text>
                 </View>
 
                 <StatusBar style="auto" />
@@ -129,5 +135,12 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: 16,
         fontWeight: 'bold',
+    },
+
+    dcompte: {
+        color: '#fff',
+        fontSize: 16,
+        marginTop: 10,
+        textAlign: 'center',
     },
 });
