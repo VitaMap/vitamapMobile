@@ -1,3 +1,2 @@
 # Ignore node_modules and cache files
-node_modules/
-.cache/
+Front/node_modules/
