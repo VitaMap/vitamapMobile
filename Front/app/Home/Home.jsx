@@ -1,150 +1,190 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Animated, Image, ImageBackground } from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
+import React, { useState, useEffect, useRef } from 'react';
+import { StyleSheet, View, ActivityIndicator, ImageBackground, Image, TouchableOpacity, Animated } from 'react-native';
+import MapView, { Marker, Circle } from 'react-native-maps';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 export default function Home({ navigation }) {
-  const [activeTab, setActiveTab] = useState('home'); // État pour suivre l'onglet actif
-  const [animation] = useState({
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('home');
+  
+  // Utilisation de useRef pour les animations
+  const animation = useRef({
     home: new Animated.Value(0),
+    stat: new Animated.Value(0), // Ajouté pour l'onglet stat
     notifications: new Animated.Value(0),
     profil: new Animated.Value(0),
-  });
+  }).current;
+
+  const diseaseColors = {
+    "Grippe Aviaire": "rgba(255, 0, 0, 0.5)",
+    "Dengue": "rgba(255, 165, 0, 0.5)",
+    "COVID-19": "rgba(0, 0, 255, 0.5)",
+    "Choléra": "rgba(0, 255, 0, 0.5)",
+    "Paludisme": "rgba(128, 0, 128, 0.5)",
+    "Ebola": "rgba(255, 69, 0, 0.5)",
+    "Zika": "rgba(255, 255, 0, 0.5)",
+  };
+
+  const cityRadii = {
+    "Paris": 5800,
+    "Rio de Janeiro": 7000,
+    "New York": 8000,
+    "Tokyo": 6000,
+    "Dakar": 4000,
+    "Sydney": 7000,
+    "Le Cap": 5000,
+  };
 
   const handleTabPress = (tab) => {
-    setActiveTab(tab);
-
-    // Lancer l'animation pour le tab actif
-    Animated.timing(animation[tab], {
-      toValue: 1,
-      duration: 300,
-      useNativeDriver: false,
-    }).start();
-
-    // Réinitialiser les autres animations
+    // Arrêter toutes les animations en cours
     Object.keys(animation).forEach((key) => {
-      if (key !== tab) {
-        Animated.timing(animation[key], {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: false,
-        }).start();
-      }
+      animation[key].stopAnimation();
+      animation[key].setValue(0);
     });
 
+    setActiveTab(tab);
+
+    // Démarrer la nouvelle animation si elle existe
+    if (animation[tab]) {
+      Animated.timing(animation[tab], {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true, // Changé à true pour de meilleures performances
+      }).start();
+    }
+
+    // Gestion de la navigation
     if (tab === 'profil') {
       navigation.navigate('Profil');
+    } else if (tab === 'stat') {
+      navigation.navigate('Stat');
     }
   };
 
-  const getBarColor = (tab) => {
-    return animation[tab].interpolate({
-      inputRange: [0, 1],
-      outputRange: ['#fff', '#000'], // Blanc au repos, bleu actif
-    });
-  };
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch('http://10.0.2.2:3000/api/maladies-par-ville');
+        const result = await response.json();
+        setData(result);
+        setLoading(false);
+      } catch (error) {
+        console.error('Erreur lors de la récupération des données :', error);
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
 
   return (
-
     <ImageBackground
-    source={require('../../assets/3262023.jpg')}
-    style={styles.backgroundImage}>
-    
-    <View style={styles.container}>
-    
-      <Image source={require('../../assets/realvitalogo.png')} 
-                          style={styles.logo}
-                      />
-   
-      <Ionicons name="menu-outline" size={25} color="#fff" style={{ position: 'absolute', top: 52, right: 20 }} />
-      <Ionicons name="arrow-back-outline" size={25} color="#fff" style={{ position: 'absolute', top: 52, left: 20 }} />
-
-      <MapView
-        style={styles.map}
-        initialRegion={{
-          latitude: 46.603354,
-          longitude: 1.888334,
-          latitudeDelta: 10,
-          longitudeDelta: 10,
-        }}
-        showsUserLocation={true}
-        showsMyLocationButton={true}
-      >
-        <Marker
-          coordinate={{ latitude: 48.8566, longitude: 2.3522 }}
-          title="Paris"
-          description="Capitale de la France"
+      source={require('../../assets/3262023.jpg')}
+      style={styles.backgroundImage}
+    >
+      <View style={styles.container}>
+        <Image
+          source={require('../../assets/realvitalogo.png')}
+          style={styles.logo}
         />
-      </MapView>
+        <Ionicons name="menu-outline" size={25} color="#fff" style={styles.menuIcon} />
+        <Ionicons name="arrow-back-outline" size={25} color="#fff" style={styles.backIcon} />
 
-
-      <View style={styles.bottomMenu}>
-        <TouchableOpacity
-          style={styles.menuButton}
-          onPress={() => handleTabPress('home')}
+        <MapView
+          style={styles.map}
+          initialRegion={{
+            latitude: 20.0,
+            longitude: 0.0,
+            latitudeDelta: 100,
+            longitudeDelta: 100,
+          }}
         >
-          <Ionicons name="home-outline" size={20} color={activeTab === 'home' ? 'rgba(12, 235, 123, 0.6)' : '#fff'} />
-        {/*  <Animated.View
-            style={[
-              styles.whiteBar,
-              { backgroundColor: getBarColor('home') },
-            ]}
-          />*/} 
-        </TouchableOpacity>
+          {data.map((ville, index) => (
+            <Circle
+              key={`circle-${index}`}
+              center={{
+                latitude: parseFloat(ville.position.split(',')[0]),
+                longitude: parseFloat(ville.position.split(',')[1]),
+              }}
+              radius={cityRadii[ville.ville] || 3000}
+              fillColor={diseaseColors[ville.maladies[0]?.nom] || "rgba(0, 0, 0, 0.2)"}
+              strokeColor="rgba(0, 0, 0, 0.5)"
+            />
+          ))}
 
-        <TouchableOpacity
-          style={styles.menuButton}
-          onPress={() => handleTabPress('notifications')}
-        >
-          <Ionicons name="notifications-outline" size={20} color={activeTab === 'notifications' ? 'rgba(12, 235, 123, 0.6)' : '#fff'} />
-         {/* <Animated.View
-            style={[
-              styles.whiteBar,
-              { backgroundColor: getBarColor('notifications') },
-            ]}
-          />*/} 
-        </TouchableOpacity>
+          {data.map((ville, index) => (
+            <Marker
+              key={`marker-${index}`}
+              coordinate={{
+                latitude: parseFloat(ville.position.split(',')[0]),
+                longitude: parseFloat(ville.position.split(',')[1]),
+              }}
+              title={`${ville.ville}, ${ville.pays}`}
+              description={`Maladies: ${ville.maladies.map((m) => m.nom).join(', ')}`}
+            />
+          ))}
+        </MapView>
 
-        <TouchableOpacity
-          style={styles.menuButton}
-          onPress={() => handleTabPress('profil')}
-        >
-          <Ionicons name="person-outline" size={20} color={activeTab === 'profil' ? 'rgba(12, 235, 123, 0.6)' : '#fff'} />
-          {/* <Animated.View
-            style={[
-              styles.whiteBar,
-              { backgroundColor: getBarColor('profil') },
-            ]}
-          />*/} 
-        </TouchableOpacity>
+        <View style={styles.bottomMenu}>
+          <TouchableOpacity
+            style={styles.menuButton}
+            onPress={() => handleTabPress('home')}
+          >
+            <Ionicons 
+              name="home-outline" 
+              size={20} 
+              color={activeTab === 'home' ? 'rgba(12, 235, 123, 0.6)' : '#fff'} 
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.menuButton}
+            onPress={() => handleTabPress('stat')}
+          >
+            <Ionicons 
+              name="stats-chart-outline" 
+              size={20} 
+              color={activeTab === 'stat' ? 'rgba(12, 235, 123, 0.6)' : '#fff'} 
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.menuButton}
+            onPress={() => handleTabPress('profil')}
+          >
+            <Ionicons 
+              name="person-outline" 
+              size={20} 
+              color={activeTab === 'profil' ? 'rgba(12, 235, 123, 0.6)' : '#fff'} 
+            />
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
     </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-
   backgroundImage: {
-    flex:1,
+    flex: 1,
     resizeMode: 'cover',
   },
-
   container: {
     flex: 1,
-  
     alignItems: 'center',
     justifyContent: 'flex-start',
     marginTop: 0,
     padding: 10,
     paddingTop: 30,
-   
-  },
-  title: {
-    fontSize: 24,
-    marginBottom: 8,
-    color: '#fff',
-    fontWeight: 'bold',
   },
   map: {
     width: '100%',
@@ -155,7 +195,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
-  
     width: '100%',
     height: 60,
     borderTopWidth: 1,
@@ -166,16 +205,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  whiteBar: {
-    marginTop: 5,
-    width: '100%',
-    height: 3,
-    borderRadius: 2,
-  },
-
   logo: {
     width: 50,
     height: 70,
-    
+  },
+  menuIcon: {
+    position: 'absolute', 
+    top: 52, 
+    right: 20
+  },
+  backIcon: {
+    position: 'absolute', 
+    top: 52, 
+    left: 20
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
   },
 });
