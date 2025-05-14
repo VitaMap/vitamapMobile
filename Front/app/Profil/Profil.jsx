@@ -1,35 +1,54 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Image, ActivityIndicator, ScrollView, ImageBackground } from 'react-native';
 import axios from 'axios';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { DarkModeContext } from '../DarkModeContext';
 
-export default function Profil() {
+export default function Profil({ navigation, route }) {
+  const { darkMode } = useContext(DarkModeContext);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const userId = 1; // Exemple : ID utilisateur statique
+  // Récupère l'id utilisateur passé par la navigation
+  const userId = route.params?.userId;
 
+  useEffect(() => {
+    if (!userId) {
+      setUser(null);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
     axios
       .get(`http://10.0.2.2:3000/api/user/${userId}`)
       .then((response) => {
         setUser(response.data);
         setLoading(false);
       })
-      .catch((error) => {
-        console.error('Erreur lors de la récupération des données utilisateur :', error);
+      .catch(() => {
+        setUser(null);
         setLoading(false);
       });
-  }, []);
+  }, [userId]);
 
   const handleLogout = () => {
-    alert('Déconnexion réussie !');
-    // Ajoutez ici la logique pour gérer la déconnexion
+    setUser(null);
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'Login' }],
+    });
   };
+
+  const backgroundColor = darkMode ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.2)';
+  const cardBg = darkMode ? 'rgba(30,30,30,0.98)' : 'rgba(255,255,255,0.9)';
+  const textColor = darkMode ? '#fff' : '#333';
+  const infoBg = darkMode ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.6)';
+  const infoText = darkMode ? '#fff' : '#fff';
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
+      <View style={[styles.loadingContainer, { backgroundColor: darkMode ? '#111' : 'rgba(255,255,255,0.2)' }]}>
         <ActivityIndicator size="large" color="#fff" />
       </View>
     );
@@ -37,54 +56,65 @@ export default function Profil() {
 
   if (!user) {
     return (
-      <View style={styles.loadingContainer}>
+      <View style={[styles.loadingContainer, { backgroundColor: darkMode ? '#111' : 'rgba(255,255,255,0.2)' }]}>
         <Text style={styles.errorText}>Impossible de charger les informations utilisateur.</Text>
       </View>
     );
   }
 
-  return (
+  const MainContent = (
+    <ScrollView contentContainerStyle={[styles.container, { backgroundColor: darkMode ? '#111' : 'rgba(255,255,255,0.2)' }]}>
+      <View style={styles.header}>
+        <Ionicons
+          name="arrow-back-outline"
+          size={28}
+          color="#fff"
+          style={styles.backIcon}
+          onPress={() => navigation.navigate('Home', { userId: route.params?.userId })}
+        />
+        <Text style={styles.headerTitle}>Mon Profil</Text>
+      </View>
+
+      <View style={[styles.profileCard, { backgroundColor: cardBg }]}>
+        <Image
+          source={{ uri: 'https://via.placeholder.com/150' }}
+          style={styles.profileImage}
+        />
+        <Text style={[styles.name, { color: textColor }]}>{user.nom} {user.prenom}</Text>
+        <Text style={[styles.email, { color: textColor }]}>{user.email}</Text>
+        <Text style={[styles.date, { color: textColor }]}>Inscrit le : {new Date(user.date_inscription).toLocaleDateString()}</Text>
+      </View>
+
+      <View style={[styles.infoSection, { backgroundColor: infoBg }]}>
+        <Text style={[styles.infoTitle, { color: infoText }]}>Informations supplémentaires</Text>
+        <View style={styles.infoRow}>
+          <Ionicons name="location-outline" size={20} color="#fff" />
+          <Text style={[styles.infoText, { color: infoText }]}>Paris, France</Text>
+        </View>
+        
+        <View style={styles.infoRow}>
+          <Ionicons name="calendar-outline" size={20} color="#fff" />
+          <Text style={[styles.infoText, { color: infoText }]}>Membre depuis {new Date(user.date_inscription).getFullYear()}</Text>
+        </View>
+      </View>
+
+      <TouchableOpacity style={[styles.logoutButton, { backgroundColor: darkMode ? '#222' : '#151516' }]} onPress={handleLogout}>
+        <Ionicons name="log-out-outline" size={20} color="#fff" />
+        <Text style={styles.logoutText}>Se déconnecter</Text>
+      </TouchableOpacity>
+    </ScrollView>
+  );
+
+  return darkMode ? (
+    <View style={{ flex: 1, backgroundColor: '#111' }}>
+      {MainContent}
+    </View>
+  ) : (
     <ImageBackground
-      source={require('../../assets/3262023.jpg')} // Même image de fond que Register
+      source={require('../../assets/3262023.jpg')}
       style={styles.backgroundImage}
     >
-      <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.header}>
-          <Ionicons name="arrow-back-outline" size={28} color="#fff" style={styles.backIcon} />
-          <Text style={styles.headerTitle}>Mon Profil</Text>
-        </View>
-
-        <View style={styles.profileCard}>
-          <Image
-            source={{ uri: 'https://via.placeholder.com/150' }} // Remplacez par une URL d'image si disponible
-            style={styles.profileImage}
-          />
-          <Text style={styles.name}>{user.nom} {user.prenom}</Text>
-          <Text style={styles.email}>{user.email}</Text>
-          <Text style={styles.date}>Inscrit le : {new Date(user.date_inscription).toLocaleDateString()}</Text>
-        </View>
-
-        <View style={styles.infoSection}>
-          <Text style={styles.infoTitle}>Informations supplémentaires</Text>
-          <View style={styles.infoRow}>
-            <Ionicons name="location-outline" size={20} color="#fff" />
-            <Text style={styles.infoText}>Paris, France</Text>
-          </View>
-          <View style={styles.infoRow}>
-            <Ionicons name="call-outline" size={20} color="#fff" />
-            <Text style={styles.infoText}>+33 6 12 34 56 78</Text>
-          </View>
-          <View style={styles.infoRow}>
-            <Ionicons name="calendar-outline" size={20} color="#fff" />
-            <Text style={styles.infoText}>Membre depuis {new Date(user.date_inscription).getFullYear()}</Text>
-          </View>
-        </View>
-
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Ionicons name="log-out-outline" size={20} color="#fff" />
-          <Text style={styles.logoutText}>Se déconnecter</Text>
-        </TouchableOpacity>
-      </ScrollView>
+      {MainContent}
     </ImageBackground>
   );
 }

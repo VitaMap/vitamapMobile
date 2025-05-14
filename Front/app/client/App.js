@@ -6,38 +6,48 @@ import Register from '../Register/Register';
 import Home from '../Home/Home';
 import Profil from '../Profil/Profil';
 import Stat from '../Stat/Stat';
+import Parametres from '../Parametres/Parametres';
+import { DarkModeProvider } from '../DarkModeContext'; // <-- Ajout
+
 const Stack = createStackNavigator();
 
 export default function App() {
     return (
-        <NavigationContainer>
-            <Stack.Navigator initialRouteName="Login">
-                <Stack.Screen
-                    name="Login"
-                    component={Login}
-                    options={{ headerShown: false }} // Cacher le header par défaut
-                />
-                <Stack.Screen
-                    name="Register"
-                    component={Register}
-                    options={{ headerShown: false }} // Cacher le header
-                />
-                <Stack.Screen
-                    name="Home"
-                    component={Home}
-                    options={{ headerShown: false }} // Cacher le header
-                />
-                <Stack.Screen
-                    name="Profil"
-                    component={Profil}
-                    options={{ headerShown: false }} // Cacher le header
-                />
-              <Stack.Screen
-                    name="Stat"
-                    component={Stat}
-                    options={{ headerShown: false }} // Cacher le header
-                />
-            </Stack.Navigator>
-        </NavigationContainer>
+        <DarkModeProvider>
+            <NavigationContainer>
+                <Stack.Navigator initialRouteName="Login">
+                    <Stack.Screen
+                        name="Login"
+                        component={Login}
+                        options={{ headerShown: false }} // Cacher le header par défaut
+                    />
+                    <Stack.Screen
+                        name="Register"
+                        component={Register}
+                        options={{ headerShown: false }} // Cacher le header
+                    />
+                    <Stack.Screen
+                        name="Home"
+                        component={Home}
+                        options={{ headerShown: false }} // Cacher le header
+                    />
+                    <Stack.Screen
+                        name="Profil"
+                        component={Profil}
+                        options={{ headerShown: false }} // Cacher le header
+                    />
+                    <Stack.Screen
+                        name="Stat"
+                        component={Stat}
+                        options={{ headerShown: false }} // Cacher le header
+                    />
+                    <Stack.Screen
+                        name="Parametres"
+                        component={Parametres}
+                        options={{ headerShown: false }} // Cacher le header
+                    />
+                </Stack.Navigator>
+            </NavigationContainer>
+        </DarkModeProvider>
     );
 }

@@ -7,6 +7,10 @@ export default function Login({ navigation }) {
   const [password, setPassword] = useState('');
 
   const handleLogin = async () => {
+    if (!email.trim() || !password.trim()) {
+      alert('Veuillez remplir tous les champs.');
+      return;
+    }
     try {
       const response = await fetch('http://10.0.2.2:3000/api/login', {
         method: 'POST',
@@ -19,55 +23,56 @@ export default function Login({ navigation }) {
       const data = await response.json();
 
       if (response.ok) {
-        console.log('Connexion réussie :', data.token);
-        navigation.navigate('Home');
+        navigation.navigate('Home', { userId: data.id });
       } else {
-        console.log('Erreur :', data.message);
         alert('Identifiants invalides');
       }
     } catch (error) {
-      console.error('Erreur réseau :', error);
       alert('Une erreur réseau est survenue. Veuillez réessayer.');
     }
   };
 
   return (
-      <ImageBackground
-          source={require('../../assets/3262023.jpg')}
-          style={styles.backgroundImage}
-      >
-        <View style={styles.container}>
-          <Image
-              source={require('../../assets/realvitalogo.png')}
-              style={styles.logo}
-          />
-          <Text style={styles.title}></Text>
-          <TextInput
-              style={styles.input}
-              placeholder="Email"
-              value={email}
-              onChangeText={setEmail}
-          />
-          <TextInput
-              style={styles.input}
-              placeholder="Mot de passe"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-          />
+    <ImageBackground
+      source={require('../../assets/3262023.jpg')}
+      style={styles.backgroundImage}
+    >
+      <View style={styles.container}>
+        <Image
+          source={require('../../assets/realvitalogo.png')}
+          style={styles.logo}
+        />
+        <Text style={styles.title}></Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          value={email}
+          onChangeText={setEmail}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Mot de passe"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+        />
 
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-                style={[styles.customButton, { backgroundColor: '#151516' }]}
-                onPress={handleLogin}
-            >
-              <Text style={styles.buttonText}>Se Connecter</Text>
-            </TouchableOpacity>
-          </View>
-
-          <StatusBar style="auto" />
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={[styles.customButton, { backgroundColor: '#151516' }]}
+            onPress={handleLogin}
+          >
+            <Text style={styles.buttonText}>Se Connecter</Text>
+          </TouchableOpacity>
         </View>
-      </ImageBackground>
+
+        <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+          <Text style={styles.registerText}>Vous n'avez pas de compte ?</Text>
+        </TouchableOpacity>
+
+        <StatusBar style="auto" />
+      </View>
+    </ImageBackground>
   );
 }
 
@@ -114,6 +119,13 @@ const styles = StyleSheet.create({
   buttonText: {
     color: 'white',
     fontSize: 16,
+    fontWeight: 'bold',
+  },
+  registerText: {
+    color: '#fff',
+    fontSize: 15,
+    marginTop: 16,
+    textDecorationLine: 'underline',
     fontWeight: 'bold',
   },
 });
